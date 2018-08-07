@@ -5,7 +5,7 @@
 #include <Python.h>
 #include <vector>
 #include <boost/python.hpp>
-#include "SimHash.h"
+#include "SimHash.hpp"
 
 using namespace boost::python;
 //

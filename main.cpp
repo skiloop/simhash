@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "bigint.h"
-#include "SimHash.h"
+#include "bigint.hpp"
+#include "SimHash.hpp"
 
 int main() {
     const char *v = "2479530857526804504083961063697536543";

@@ -2,8 +2,8 @@
 // Created by Baofeng Shii on 2018/7/31.
 //
 
-#ifndef CUTILLIB_BIGINT_H
-#define CUTILLIB_BIGINT_H
+#ifndef SIMHASH_BIGINT_HPP
+#define SIMHASH_BIGINT_HPP
 
 #include <iostream>
 #include <cstring>
@@ -56,4 +56,4 @@ namespace bigint {
     }
 
 }
-#endif //CUTILLIB_BIGINT_H
+#endif //SIMHASH_BIGINT_HPP
