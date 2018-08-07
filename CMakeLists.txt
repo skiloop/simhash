@@ -3,7 +3,7 @@ project(simhash_cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(simhash_cpp main.cpp bigint.cpp SimHash.cpp)
+add_executable(simhash_cpp main.cpp)
 
 include(FindPythonInterp)
 
