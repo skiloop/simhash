@@ -2,12 +2,12 @@
 // Created by Baofeng Shii on 2018/7/27.
 //
 
-#ifndef SIMHASH_CPP_SIMHASH_H
-#define SIMHASH_CPP_SIMHASH_H
+#ifndef SIMHASH_SIMHASH_HPP
+#define SIMHASH_SIMHASH_HPP
 
 #include <iostream>
 #include <vector>
-#include "bigint.h"
+#include "bigint.hpp"
 
 template<typename T>
 class SimHash {
@@ -118,4 +118,4 @@ private:
 };
 
 
-#endif //SIMHASH_CPP_SIMHASH_H
+#endif //SIMHASH_SIMHASH_HPP

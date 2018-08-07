@@ -1,0 +1,6 @@
+include py_simhash.cpp
+include *.hpp
+include *.h
+include README.txt
+include *.md
+include setup.py
