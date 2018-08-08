@@ -7,63 +7,63 @@
 
 #include <iostream>
 #include <vector>
+
 #include "bigint.hpp"
+#include "SimHashBase.h"
 
 template<typename T>
-class SimHash {
-    unsigned int f;
-    unsigned int hash_bit;
+class SimHash : public SimHashBase {
+    static const unsigned int f = sizeof(T) * 8;
     T _value;
-    std::vector<unsigned> parts;
 
 public:
-    SimHash(std::string const &s, unsigned int f = 128, unsigned int hash_bit = 16) : f(f), hash_bit(hash_bit) {
-        this->_value = bigint::atoi(s.c_str(), this->_value);
+    SimHash(std::string const &s, unsigned int hash_bit = 16) : SimHashBase(s, hash_bit) {
+        this->applyValue(s);
         this->split();
     }
 
-    SimHash(unsigned int f = 128, unsigned int hash_bit = 16) : f(f), hash_bit(hash_bit) {
+
+    SimHash(unsigned int hash_bit = 16) : SimHashBase(hash_bit) {
     }
 
-    std::string string() {
+    std::string string() const {
         return bigint::itoa(this->_value);
     }
 
-    std::string value() {
-        return this->string();
-    }
-
-    std::string hex() {
+    std::string hex() const {
         return bigint::itoa(this->_value, 16);
     }
 
-    bool similar(SimHash<T> const &another, int count, unsigned int distance) {
-        if (this == &another) {
-            return true;
+    unsigned dimension() const {
+        return this->f;
+    }
+
+    void build(list &features, list &weights) {
+        std::vector<T> f;
+        std::vector<int> w;
+        const T t = 0;
+        boost::python::ssize_t n = boost::python::len(features);
+        std::string token;
+        for (boost::python::ssize_t i = 0; i < n; i++) {
+            token = boost::python::extract<std::string>(features[i]);
+            f.push_back(bigint::atoi(token.c_str(), t, 10));
         }
-        auto cnt = 0;
-        auto it = this->parts.begin();
-        auto ait = another.parts.begin();
-        while (it != this->parts.end() && ait != another.parts.end()) {
-            if (*it == *ait) {
-                cnt++;
-                if (cnt >= count) {
-                    return this->distance(another) <= distance;
-                }
-            }
-            it++;
-            ait++;
+        n = boost::python::len(weights);
+
+        for (boost::python::ssize_t i = 0; i < n; i++) {
+            w.push_back(boost::python::extract<int>(weights[i]));
         }
-        return false;
+
+        this->buildByFeatures(f, w);
     }
 
     void buildByFeatures(std::vector<T> &features, std::vector<int> &weights) {
         if (weights.begin() == weights.end()) {
             for (size_t i = 0; i < features.size(); i++) {
-                weights.push_back(1.0);
+                weights.push_back(1);
             }
         }
-        std::vector<T> values;
+        std::vector<long> values;
         for (size_t i = 0; i < this->f; i++) {
             values.push_back(0);
         }
@@ -87,9 +87,10 @@ public:
         this->split();
     };
 
-    unsigned distance(SimHash<T> const &another) const {
-        assert(this->f == another.f);
-        auto x = this->_value ^another._value;
+    unsigned distance(SimHashBase const &another) const {
+        if (this->dimension() != another.dimension())return -1;
+        SimHash<T> const &obj = dynamic_cast<SimHash<T> const &>(another);
+        auto x = this->_value ^obj._value;
         unsigned ans = 0;
         while (x) {
             ans += 1;
@@ -115,6 +116,11 @@ private:
             auto base_ = base << c;
             this->parts.push_back((this->_value & base_) >> c);
         }
+    }
+
+    void applyValue(std::string const &value) {
+        this->_value = bigint::atoi(value.c_str(), this->_value);
+//        std::cout << "value: " << value << std::endl << "real value: " << bigint::itoa(this->_value) << std::endl;
     }
 };
 

@@ -4,11 +4,14 @@
 # created by skiloop@gmail.com 2018/8/7
 #
 
+from six import PY3
 import collections
 import unittest
 import hashlib
-from pysimhash import SimHash
-
+import pysimhash
+if PY3:
+    basestring=(str,bytes)
+    long=int
 
 class Simhash(object):
 
@@ -62,7 +65,7 @@ class Simhash(object):
         base = 2 ** self.hash_bit - 1
         for i in range(int(self.f / self.hash_bit)):
             if self.value == 0:
-                self.part.append(long(0))
+                self.part.append(int(0))
                 continue
             base_ = base << (i * self.hash_bit)
             bhash = (self.value & base_) >> (i * self.hash_bit)
@@ -111,20 +114,23 @@ class Simhash(object):
 
 class Test(unittest.TestCase):
 
+    def setUp(self):
+        print(pysimhash.__file__)
+
     def testValue(self):
         hs = "2479530857526804504083961063697536543"
-        s1 = Simhash(long(hs))
-        s2 = SimHash(hs, 128, 16)
+        s1 = Simhash(int(hs))
+        s2 = pysimhash.SimHash(hs, 128, 16)
         self.assertEqual(str(s1.value), s2.value())
         self.assertEqual(s1.part, s2.parts())
 
     def testDisance(self):
         h2 = "2479530857526804504083961063697536543"
         h1 = "16438062231610353799719944743129574075"
-        s1 = Simhash(long(h1))
-        s2 = Simhash(long(h2))
+        s1 = Simhash(int(h1))
+        s2 = Simhash(int(h2))
         d1 = s1.distance(s2)
-        v1 = SimHash(h1, 128, 16)
-        v2 = SimHash(h2, 128, 16)
+        v1 = pysimhash.SimHash(h1, 128, 16)
+        v2 = pysimhash.SimHash(h2, 128, 16)
         d2 = v1.distance(v2)
         self.assertEqual(d1, d2)

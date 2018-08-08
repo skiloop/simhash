@@ -2,7 +2,6 @@
 // Created by Baofeng Shii on 2018/8/1.
 //
 
-#include <Python.h>
 #include <vector>
 #include <boost/python.hpp>
 #include "SimHash.hpp"
@@ -15,61 +14,98 @@ using namespace boost::python;
 //    return self->distance(*rhs);
 //}
 
-template<typename T>
-class SimHashPy : public SimHash<T> {
+class SimHashPy {
+private:
+    SimHashBase *s;
 public:
-    SimHashPy(std::string const &s, unsigned int f = 128, unsigned int hash_bit = 16) : SimHash<T>(s, f, hash_bit) {
-
+    SimHashPy(std::string const &s, unsigned f = 128, unsigned int hash_bit = 16) {
+        this->s = this->getSimHashObject(s, f, hash_bit);
+//        std::cout << "f: " << f << std::endl;
+        assert(this->s != nullptr);
     }
 
-    SimHashPy(unsigned int f = 128, unsigned int hash_bit = 16) : SimHash<T>(f, hash_bit) {
+    ~SimHashPy() {
+        delete this->s;
+    }
 
+    SimHashPy(unsigned f = 128, unsigned int hash_bit = 16) {
+        this->s = this->getSimHashObject(f, hash_bit);
+//        std::cout << "f: " << f << std::endl;
+        assert(this->s != nullptr);
     }
 
     void build(list &features, list &weights) {
-        std::vector <T> f;
-        std::vector<int> w;
-        const T t = 0;
-        boost::python::ssize_t n = boost::python::len(features);
-        std::string token;
-        for (boost::python::ssize_t i = 0; i < n; i++) {
-            token = boost::python::extract<std::string>(features[i]);
-            f.push_back(bigint::atoi(token.c_str(), t, 10));
-        }
-        n = boost::python::len(weights);
-
-        for (boost::python::ssize_t i = 0; i < n; i++) {
-            w.push_back(boost::python::extract<int>(weights[i]));
-        }
-
-        this->buildByFeatures(f, w);
+        this->s->build(features, weights);
     }
 
     list PartList() {
         list lst;
-        auto parts = this->getParts();
+        auto parts = this->s->getParts();
         for (auto v:parts) {
             lst.append(v);
         }
         return lst;
     }
 
-    bool is_similar(SimHashPy<T> const &another, int count, int distance) {
-        return this->similar(another, count, distance);
+    std::string string() {
+        return this->s->string();
     }
 
-    unsigned get_distance(SimHashPy<T> const &another) {
-        return this->distance(another);
+    std::string hex() {
+        return this->s->hex();
+    }
+
+    bool is_similar(SimHashPy const &another, int count, int distance) {
+        return this->s->similar(*(another.s), count, distance);
+    }
+
+    unsigned get_distance(SimHashPy const &another) {
+        return this->s->distance(*(another.s));
+    }
+
+    static SimHashBase *getSimHashObject(std::string const &s, unsigned f, unsigned hash_bit) {
+        switch (f) {
+            case 128:
+                return new SimHash<unsigned __int128>(s, hash_bit);
+            case 64:
+                return new SimHash<__uint64_t>(s, hash_bit);
+            case 32:
+                return new SimHash<__uint32_t>(s, hash_bit);
+            case 16:
+                return new SimHash<__uint16_t>(s, hash_bit <= 16 ? hash_bit : 16);
+            case 8:
+                return new SimHash<__uint8_t>(s, hash_bit <= 8 ? hash_bit : 8);
+            default:
+                return nullptr;
+        }
+    }
+
+    static SimHashBase *getSimHashObject(unsigned f, unsigned hash_bit) {
+        switch (f) {
+            case 128:
+                return new SimHash<unsigned __int128>(hash_bit);
+            case 64:
+                return new SimHash<__uint64_t>(hash_bit);
+            case 32:
+                return new SimHash<__uint32_t>(hash_bit);
+            case 16:
+                return new SimHash<__uint16_t>(hash_bit <= 16 ? hash_bit : 16);
+            case 8:
+                return new SimHash<__uint8_t>(hash_bit <= 8 ? hash_bit : 8);
+            default:
+                return nullptr;
+        }
     }
 };
 
+
 BOOST_PYTHON_MODULE (pysimhash) {
-        class_<SimHashPy<__int128>>("SimHash", init<std::string, int, int>())
-                .def(init<int, int>())
-                .def("build", &SimHashPy<__int128>::build)
-                .def("hex", &SimHashPy<__int128>::hex)
-                .def("similar", &SimHashPy<__int128>::is_similar)
-                .def("distance", &SimHashPy<__int128>::get_distance)
-                .def("parts", &SimHashPy<__int128>::PartList)
-                .def("value", &SimHashPy<__int128>::string);
+    class_<SimHashPy>("SimHash", init<std::string, unsigned, unsigned>())
+            .def(init<unsigned, unsigned>())
+            .def("build", &SimHashPy::build)
+            .def("hex", &SimHashPy::hex)
+            .def("similar", &SimHashPy::is_similar)
+            .def("distance", &SimHashPy::get_distance)
+            .def("parts", &SimHashPy::PartList)
+            .def("value", &SimHashPy::string);
 }
