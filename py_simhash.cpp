@@ -6,6 +6,7 @@
 #include <vector>
 #include <boost/python.hpp>
 #include "SimHash.hpp"
+#include "bigint.hpp"
 
 using namespace boost::python;
 //
@@ -26,14 +27,21 @@ public:
     }
 
     void build(list &features, list &weights) {
-        std::vector<T> f;
-        std::vector<float> w;
-        for (auto v:f) {
-            f.push_back(v);
+        std::vector <T> f;
+        std::vector<int> w;
+        const T t = 0;
+        boost::python::ssize_t n = boost::python::len(features);
+        std::string token;
+        for (boost::python::ssize_t i = 0; i < n; i++) {
+            token = boost::python::extract<std::string>(features[i]);
+            f.push_back(bigint::atoi(token.c_str(), t, 10));
         }
-        for (auto v:w) {
-            w.push_back(v);
+        n = boost::python::len(weights);
+
+        for (boost::python::ssize_t i = 0; i < n; i++) {
+            w.push_back(boost::python::extract<int>(weights[i]));
         }
+
         this->buildByFeatures(f, w);
     }
 
@@ -56,12 +64,12 @@ public:
 };
 
 BOOST_PYTHON_MODULE (pysimhash) {
-    class_<SimHashPy<unsigned __int128>>("SimHash", init<std::string, int, int>())
-            .def(init<int, int>())
-            .def("build", &SimHashPy<unsigned __int128>::build)
-            .def("hex", &SimHashPy<unsigned __int128>::hex)
-            .def("similar", &SimHashPy<unsigned __int128>::is_similar)
-            .def("distance", &SimHashPy<unsigned __int128>::get_distance)
-            .def("parts", &SimHashPy<unsigned __int128>::PartList)
-            .def("value", &SimHashPy<unsigned __int128>::string);
+        class_<SimHashPy<__int128>>("SimHash", init<std::string, int, int>())
+                .def(init<int, int>())
+                .def("build", &SimHashPy<__int128>::build)
+                .def("hex", &SimHashPy<__int128>::hex)
+                .def("similar", &SimHashPy<__int128>::is_similar)
+                .def("distance", &SimHashPy<__int128>::get_distance)
+                .def("parts", &SimHashPy<__int128>::PartList)
+                .def("value", &SimHashPy<__int128>::string);
 }

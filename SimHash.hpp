@@ -37,7 +37,7 @@ public:
         return bigint::itoa(this->_value, 16);
     }
 
-    bool similar(SimHash<T> const &another, int count, unsigned int disance) {
+    bool similar(SimHash<T> const &another, int count, unsigned int distance) {
         if (this == &another) {
             return true;
         }
@@ -48,7 +48,7 @@ public:
             if (*it == *ait) {
                 cnt++;
                 if (cnt >= count) {
-                    return this->distance(another) <= disance;
+                    return this->distance(another) <= distance;
                 }
             }
             it++;
@@ -57,30 +57,31 @@ public:
         return false;
     }
 
-    void buildByFeatures(std::vector<T> &features, std::vector<float> &weights) {
+    void buildByFeatures(std::vector<T> &features, std::vector<int> &weights) {
         if (weights.begin() == weights.end()) {
             for (size_t i = 0; i < features.size(); i++) {
                 weights.push_back(1.0);
             }
         }
-        auto wit = weights.begin();
         std::vector<T> values;
         for (size_t i = 0; i < this->f; i++) {
             values.push_back(0);
         }
         const T one = 1;
+        auto wit = weights.begin();
         for (auto const &feature:features) {
-            auto i = 1;
+            auto c = one;
             for (auto &v:values) {
-                v += feature & (one << i) ? *wit : -*wit;
-                i++;
+                v += feature & c ? *wit : -*wit;
+                c <<= 1;
             }
+            wit++;
         }
         T ans = 0;
-        auto i = 1;
+        auto c = one;
         for (auto const &v:values) {
-            if (v > 0)ans |= (one << i);
-            i++;
+            if (v >= 0)ans |= c;
+            c <<= 1;
         }
         this->_value = ans;
         this->split();
