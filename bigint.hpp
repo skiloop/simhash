@@ -23,6 +23,9 @@ namespace bigint {
             res += values[i % base];
             i /= base;
         }
+        if (res.length() == 0) {
+            res += '0';
+        }
         if (sign == -1) {
             res += '-';
         }
