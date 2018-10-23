@@ -5,6 +5,7 @@
 #
 import io
 import os
+import platform
 from setuptools import setup
 from distutils.core import Extension
 
@@ -17,7 +18,8 @@ DESCRIPTION = 'a simhash module in cpp for python'
 URL = 'https://github.com/skiloop/simhash'
 EMAIL = 'skiloop@gmail.com'
 AUTHOR = 'Skiloop'
-VERSION = "1.0.5"
+VERSION = "1.0.6"
+SYSTEM = platform.system()
 
 try:
     src_path = "${CMAKE_CURRENT_SOURCE_DIR}/" if __via_cmake__ else ""
@@ -26,8 +28,18 @@ try:
 except IOError:
     long_description = DESCRIPTION
 
+
+def get_library(lp):
+    bn = os.path.basename(p)
+    bb = bn.split('.', 2)
+    return bb[0]
+
+
 # the c++ extension module
-libraries = ['boost_python27' if PY2 else 'boost_python36']
+if SYSTEM == "Darwin":
+    libraries = ['boost_python27' if PY2 else 'boost_python36']
+else:
+    libraries = ['boost_python-py27' if PY2 else 'boost_python-py36']
 sources = ["py_simhash.cpp", "SimHashBase.cpp"]
 if __via_cmake__:
     sources = ["${CMAKE_CURRENT_SOURCE_DIR}/{}".format(s) for s in sources]
