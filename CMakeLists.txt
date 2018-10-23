@@ -3,31 +3,43 @@ project(simhash_cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-include(FindPythonInterp)
-include(FindPythonLibs)
+FIND_PACKAGE(PythonInterp)
 
-message("-- python libraries: ${Python_LIBRARIES}")
-message("-- python libraries dirs: ${Python_LIBRARY_DIRS}")
-message("-- python version: ${Python_VERSION}")
-
-if (PYTHONLIBS_FOUND)
-    message("-- use python libraries")
-    string(REPLACE "." ";" VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    list(GET VERSION_LIST 0 PYTHON_VERSION_MAJOR)
-    list(GET VERSION_LIST 1 PYTHON_VERSION_MINOR)
-    list(GET VERSION_LIST 2 PYTHON_VERSION_PATCH)
-    MESSAGE("-- PYTHON VERSION MAJOR: ${PYTHON_VERSION_MAJOR}")
-    MESSAGE("-- PYTHON VERSION MINOR: ${PYTHON_VERSION_MINOR}")
-    MESSAGE("-- PYTHON VERSION PATCH: ${PYTHON_VERSION_PATCH}")
-    set(CMAKE_CXX_FLAGS -I${PYTHON_INCLUDE_DIR})
-    if (${PYTHONLIBS_VERSION_STRING} MATCHES "^3.")
-        set(CMAKE_EXE_LINKER_FLAGS "-lboost_python36")
+if (PYTHONINTERP_FOUND)
+    if (UNIX AND NOT APPLE)
+        if (PYTHON_VERSION_MAJOR EQUAL 3)
+            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_SUFFIX})
+            FIND_PACKAGE(PythonInterp 3)
+            FIND_PACKAGE(PythonLibs 3 REQUIRED)
+        else ()
+            FIND_PACKAGE(Boost COMPONENTS python)
+            FIND_PACKAGE(PythonInterp)
+            FIND_PACKAGE(PythonLibs REQUIRED)
+        endif ()
     else ()
-        set(CMAKE_EXE_LINKER_FLAGS "-lboost_python27")
+        if (PYTHON_VERSION_MAJOR EQUAL 3)
+            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+            FIND_PACKAGE(PythonInterp 3)
+            FIND_PACKAGE(PythonLibs 3 REQUIRED)
+        else ()
+            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
+            FIND_PACKAGE(PythonInterp)
+            FIND_PACKAGE(PythonLibs REQUIRED)
+        endif ()
     endif ()
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpython${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR} -L${PYTHON_INCLUDE_DIR}/../../lib/")
-    message("-- CMAKE EXE LINKER FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
+else ()
+    message("Python not found")
 endif ()
+
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
+message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
+message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
+message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
+
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
+LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
 
 add_executable(simhash_cpp SimHashBase.cpp main.cpp)
 
@@ -44,7 +56,7 @@ if (PYTHONINTERP_FOUND)
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
 
     add_custom_command(OUTPUT ${OUTPUT}
-            COMMAND ${Python_EXECUTABLE}
+            COMMAND ${PYTHON_EXECUTABLE}
             ARGS ${SETUP_PY} build)
 
     add_custom_target(pysimhash ALL DEPENDS ${OUTPUT})
