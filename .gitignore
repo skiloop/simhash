@@ -1,2 +1,4 @@
 .idea/**
 __init__.py
+dist
+pysimhash.egg-info/
