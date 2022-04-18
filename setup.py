@@ -27,6 +27,8 @@ EMAIL = 'skiloop@gmail.com'
 AUTHOR = 'Skiloop'
 VERSION = "1.0.6"
 SYSTEM = platform.system()
+if SYSTEM == "Windows":
+    raise EnvironmentError("not support for windows")
 
 try:
     with io.open('README.md', encoding='utf-8') as f:
@@ -82,18 +84,20 @@ extra_link_flags = []
 
 def update_build_flags(default_boost_python_root=None):
     root_path = get_boost_python_root(default_boost_python_root)
-    if root_path is not None and root_path != "":
-        extra_compile_flags.append("-I" + root_path + "/include")
-        extra_link_flags.append("-L" + root_path + "/lib")
+    if root_path is None or root_path == "":
+        return root_path
+
+    extra_compile_flags.append("-I" + root_path + "/include")
+    extra_link_flags.append("-L" + root_path + "/lib")
     return root_path
 
 
 if SYSTEM == "Darwin":
     boost_python_root = update_build_flags("/usr/local/")
-    # libraries.append(find_boost_library_osx(boost_python_root + "/lib"))
+    libraries.append(find_boost_library_osx(boost_python_root + "/lib"))
 else:
     boost_python_root = update_build_flags()
-    # libraries.append("boost_python" if PY_VERSION[0] == "2" else "boost_python3")
+    libraries.append("boost_python" if PY_VERSION[0] == "2" else "boost_python3")
 sources = [src_path("py_simhash.cpp"), src_path("SimHashBase.cpp")]
 extension_mod = Extension("pysimhash", sources, extra_compile_args=extra_compile_flags,
                           extra_link_args=extra_link_flags,
