@@ -8,11 +8,6 @@
 #include "bigint.hpp"
 
 using namespace boost::python;
-//
-//template<typename T>
-//int distance(const SimHash<T> *self, const SimHash<T> *rhs) {
-//    return self->distance(*rhs);
-//}
 
 class SimHashPy {
 private:
@@ -20,7 +15,6 @@ private:
 public:
     SimHashPy(std::string const &s, unsigned f = 128, unsigned int hash_bit = 16) {
         this->s = this->getSimHashObject(s, f, hash_bit);
-//        std::cout << "f: " << f << std::endl;
         assert(this->s != nullptr);
     }
 
@@ -30,7 +24,6 @@ public:
 
     SimHashPy(unsigned f = 128, unsigned int hash_bit = 16) {
         this->s = this->getSimHashObject(f, hash_bit);
-//        std::cout << "f: " << f << std::endl;
         assert(this->s != nullptr);
     }
 

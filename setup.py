@@ -6,12 +6,19 @@
 import io
 import os
 import platform
-from setuptools import setup
-from distutils.core import Extension
+import re
 
-from six import PY2
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+from distutils.extension import Extension
 
-__via_cmake__ = '${CMAKE_CURRENT_SOURCE_DIR}'[2:] != "CMAKE_CURRENT_SOURCE_DIR}"
+PY_VERSION = platform.python_version_tuple()
 
 NAME = 'pysimhash'
 DESCRIPTION = 'a simhash module in cpp for python'
@@ -22,30 +29,76 @@ VERSION = "1.0.6"
 SYSTEM = platform.system()
 
 try:
-    src_path = "${CMAKE_CURRENT_SOURCE_DIR}/" if __via_cmake__ else ""
-    with io.open(os.path.join(src_path, 'README.md'), encoding='utf-8') as f:
+    with io.open('README.md', encoding='utf-8') as f:
         long_description = '\n' + f.read()
 except IOError:
     long_description = DESCRIPTION
 
 
 def get_library(lp):
-    bn = os.path.basename(p)
+    bn = os.path.basename(lp)
     bb = bn.split('.', 2)
     return bb[0]
 
 
+def find_file(path, func):
+    for fn in os.listdir(path):
+        if os.path.isfile(path + "/" + fn) and func(fn):
+            return fn
+
+
+boost_lib_prefix = "libboost_python"
+
+
+def get_boost_python_root(default_root):
+    boost_python_path = os.environ.get("BOOST_PYTHON_PATH")
+    if boost_python_path is None or boost_python_path == "":
+        boost_python_path = default_root
+    return boost_python_path
+
+
+def find_boost_library_osx(boost_lib_path):
+    boost_lib_name = ''.join(['libboost_python', PY_VERSION[0], PY_VERSION[1], '.dylib'])
+    boost_library = find_file(boost_lib_path, lambda s: s == boost_lib_name)
+    if boost_library is None:
+        msg = "No boost-python library built with python %s.%s found. " \
+              "This happens when boost-python is not in common paths. " \
+              "Or you mix the versions, for example use a boost-python " \
+              "built with python 3.9 to build pysimhash for python 3.7" \
+              "You may set BOOST_PYTHON_PATH to where the correct boost-python is installed." % PY_VERSION[:2]
+        raise FileNotFoundError(msg)
+    return boost_library.split(".", 1)[0][3:]
+
+
+def src_path(fn):
+    return os.path.join("src", fn)
+
+
 # the c++ extension module
+libraries = []
+extra_compile_flags = ['-std=c++11']
+extra_link_flags = []
+
+
+def update_build_flags(default_boost_python_root=None):
+    root_path = get_boost_python_root(default_boost_python_root)
+    if root_path is not None and root_path != "":
+        extra_compile_flags.append("-I" + root_path + "/include")
+        extra_link_flags.append("-L" + root_path + "/lib")
+    return root_path
+
+
 if SYSTEM == "Darwin":
-    libraries = ['boost_python27' if PY2 else 'boost_python36']
+    boost_python_root = update_build_flags("/usr/local/")
+    # libraries.append(find_boost_library_osx(boost_python_root + "/lib"))
 else:
-    libraries = ['boost_python-py27' if PY2 else 'boost_python-py36']
-sources = ["py_simhash.cpp", "SimHashBase.cpp"]
-if __via_cmake__:
-    sources = ["${CMAKE_CURRENT_SOURCE_DIR}/{}".format(s) for s in sources]
-extension_mod = Extension("pysimhash", sources, extra_compile_args=['-std=c++11'],
+    boost_python_root = update_build_flags()
+    # libraries.append("boost_python" if PY_VERSION[0] == "2" else "boost_python3")
+sources = [src_path("py_simhash.cpp"), src_path("SimHashBase.cpp")]
+extension_mod = Extension("pysimhash", sources, extra_compile_args=extra_compile_flags,
+                          extra_link_args=extra_link_flags,
                           libraries=libraries)
 
 setup(name=NAME, version=VERSION, description=DESCRIPTION, author=AUTHOR, long_description=long_description,
       author_email=EMAIL, url=URL, license='MIT', long_description_content_type="text/markdown",
-      ext_modules=[extension_mod], requires=['six'])
+      ext_modules=[extension_mod])

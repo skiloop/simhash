@@ -1,2 +1,10 @@
 .idea/**
 __init__.py
+CMakeCache.txt
+CMakeFiles/
+Makefile
+build/
+cmake_install.cmake
+dist/
+pysimhash.egg-info/
+**/__pycache__/**

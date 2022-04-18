@@ -1,7 +1,4 @@
-include py_simhash.cpp
-include SimHashBase.cpp
-include *.hpp
-include *.h
+include src/*
 include README.txt
 include *.md
 include setup.py

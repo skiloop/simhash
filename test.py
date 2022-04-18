@@ -3,15 +3,23 @@
 #
 # created by skiloop@gmail.com 2018/8/7
 #
+import re
+from itertools import groupby
 
 from six import PY3
-import collections
+
+if PY3:
+    from collections import abc as collections
+else:
+    import collections
 import unittest
 import hashlib
 import pysimhash
+
 if PY3:
-    basestring=(str,bytes)
-    long=int
+    basestring = (str, bytes)
+    long = int
+
 
 class Simhash(object):
 
