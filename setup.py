@@ -6,7 +6,6 @@
 import io
 import os
 import platform
-import re
 
 try:
     from setuptools import setup
@@ -66,7 +65,7 @@ def find_boost_library_osx(boost_lib_path):
         msg = "No boost-python library built with python %s.%s found. " \
               "This happens when boost-python is not in common paths. " \
               "Or you mix the versions, for example use a boost-python " \
-              "built with python 3.9 to build pysimhash for python 3.7" \
+              "built with python 3.9 to build pysimhash for python 3.7. " \
               "You may set BOOST_PYTHON_PATH to where the correct boost-python is installed." % PY_VERSION[:2]
         raise FileNotFoundError(msg)
     return boost_library.split(".", 1)[0][3:]
@@ -95,6 +94,8 @@ def update_build_flags(default_boost_python_root=None):
 if SYSTEM == "Darwin":
     boost_python_root = update_build_flags("/usr/local/")
     libraries.append(find_boost_library_osx(boost_python_root + "/lib"))
+elif SYSTEM == "Windows":
+    raise RuntimeError("not support for Windows")
 else:
     boost_python_root = update_build_flags()
     libraries.append("boost_python" if PY_VERSION[0] == "2" else "boost_python3")
@@ -103,6 +104,29 @@ extension_mod = Extension("pysimhash", sources, extra_compile_args=extra_compile
                           extra_link_args=extra_link_flags,
                           libraries=libraries)
 
-setup(name=NAME, version=VERSION, description=DESCRIPTION, author=AUTHOR, long_description=long_description,
-      author_email=EMAIL, url=URL, license='MIT', long_description_content_type="text/markdown",
-      ext_modules=[extension_mod])
+setup(
+    name=NAME,
+    version=VERSION,
+    description=DESCRIPTION,
+    author=AUTHOR,
+    long_description=long_description,
+    author_email=EMAIL,
+    url=URL,
+    license='MIT',
+    classifiers=[
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: POSIX :: Linux',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        "Topic :: Utilities",
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    long_description_content_type="text/markdown",
+    ext_modules=[extension_mod])

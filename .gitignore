@@ -8,3 +8,5 @@ cmake_install.cmake
 dist/
 pysimhash.egg-info/
 **/__pycache__/**
+/_trial_temp.lock
+/_trial_temp/
