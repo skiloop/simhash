@@ -1,74 +1,48 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.12)
 project(simhash_cpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-FIND_PACKAGE(PythonInterp)
+FIND_PACKAGE(Python COMPONENTS Interpreter Development)
 
-if (PYTHONINTERP_FOUND)
-    if (UNIX AND NOT APPLE)
-        if (PYTHON_VERSION_MAJOR EQUAL 3)
-            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_SUFFIX})
-            FIND_PACKAGE(PythonInterp 3)
-            FIND_PACKAGE(PythonLibs 3 REQUIRED)
-        else ()
-            FIND_PACKAGE(Boost COMPONENTS python)
-            FIND_PACKAGE(PythonInterp)
-            FIND_PACKAGE(PythonLibs REQUIRED)
-        endif ()
-    else ()
-        if (PYTHON_VERSION_MAJOR EQUAL 3)
-            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
-            FIND_PACKAGE(PythonInterp 3)
-            FIND_PACKAGE(PythonLibs 3 REQUIRED)
-        else ()
-            FIND_PACKAGE(Boost COMPONENTS python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR})
-            FIND_PACKAGE(PythonInterp)
-            FIND_PACKAGE(PythonLibs REQUIRED)
-        endif ()
-    endif ()
-else ()
+message(STATUS "Python_FOUND = ${Python_FOUND}")
+message(STATUS "Python_Development_FOUND = ${Python_Development_FOUND}")
+
+IF (NOT Python_FOUND)
     message(FATAL_ERROR "Python not found")
-endif ()
+ENDIF ()
+IF (NOT Python_Development_FOUND)
+    message(FATAL_ERROR "Python development not found")
+ENDIF ()
+find_package(Boost COMPONENTS python REQUIRED)
 
-message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
-message(STATUS "PYTHON_EXECUTABLE = ${PYTHON_EXECUTABLE}")
-message(STATUS "PYTHON_INCLUDE_DIRS = ${PYTHON_INCLUDE_DIRS}")
-message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
-
-if (Boost_FOUND)
-
-    INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-    INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIRS})
-    LINK_LIBRARIES(${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-
-    add_executable(simhash_cpp src/SimHashBase.cpp src/main.cpp)
-
-    if (PYTHONINTERP_FOUND)
-        message("-- python interpreter found")
-        set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
-        set(SETUP_PY "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
-        set(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
-        set(PYTHONPATH "${CMAKE_CURRENT_BINARY_DIR}/${BUILD_LIB_DIR}")
-
-        set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/build")
-        set_directory_properties(PROPERTIES BOOST_PYTHON_PATH "${Boost_DIR}/")
-        add_custom_command(OUTPUT ${OUTPUT}
-                COMMAND ${PYTHON_EXECUTABLE}
-                ARGS ${SETUP_PY} build)
-
-        add_custom_target(pysimhash ALL DEPENDS ${OUTPUT})
-
-        install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} install)")
-
-        # TEST CONFIG
-        set(TEST_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/test.py")
-        set(TEST_PY "${CMAKE_CURRENT_BINARY_DIR}/test.py")
-        configure_file(${TEST_PY_IN} ${TEST_PY})
-        message("-- python path: ${PYTHONPATH}")
-        add_test(NAME simhash_test COMMAND ${PYTHON_EXECUTABLE} ${TEST_PY})
-        set_tests_properties(simhash_test PROPERTIES ENVIRONMENT PYTHONPATH=${PYTHONPATH})
-    endif ()
-else()
+if (NOT Boost_FOUND)
     message(FATAL_ERROR "boost-python not found")
 endif ()
+
+message(STATUS "Python_LIBRARY_DIRS = ${Python_LIBRARY_DIRS}")
+message(STATUS "Python_EXECUTABLE = ${Python_EXECUTABLE}")
+message(STATUS "Python_INCLUDE_DIRS = ${Python_INCLUDE_DIRS}")
+message(STATUS "Python_LIBRARIES = ${Python_LIBRARIES}")
+message(STATUS "Boost_LIBRARIES = ${Boost_LIBRARIES}")
+
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Python_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(src)
+LINK_LIBRARIES(${Boost_LIBRARIES} ${Python_LIBRARIES})
+
+add_executable(simhash_cpp src/SimHashBase.cpp src/main.cpp)
+
+set(PYTHONPATH "${CMAKE_CURRENT_BINARY_DIR}/${BUILD_LIB_DIR}")
+add_custom_target(pysimhash ALL DEPENDS pysimhash.egg-info)
+add_custom_command(
+        OUTPUT pysimhash.egg-info
+        COMMAND ${Python_EXECUTABLE} setup.py build
+        DEPENDS src/py_simhash.cpp src/SimHash.cpp src/SimHashBase.cpp
+)
+install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} ./setup.py install)")
+add_test(
+        NAME simhash_test
+        COMMAND ${Python_EXECUTABLE} ./test.py
+)
+set_tests_properties(simhash_test PROPERTIES ENVIRONMENT PYTHONPATH=${PYTHONPATH})
