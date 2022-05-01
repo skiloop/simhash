@@ -152,9 +152,9 @@ def pysimhash_compare():
 
 def benchmark():
     st, sn = simhash_compare()
-    print "simhash: {} ns, {}".format(st, sn)
+    print("simhash: {} ns, {}".format(st, sn))
     st, sn = pysimhash_compare()
-    print "pysimhash: {} ns, {}".format(st, sn)
+    print("pysimhash: {} ns, {}".format(st, sn))
 
 
 if __name__ == '__main__':
