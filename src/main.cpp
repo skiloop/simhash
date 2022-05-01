@@ -3,6 +3,36 @@
 #include "bigint.hpp"
 #include "SimHash.hpp"
 
+
+template<typename T>
+void check64small(T n, int base) {
+    size_t s = sizeof(n) * 8;
+    std::cout << "====check " << (std::is_unsigned<T>::value ? "unsigned" : "") << s << ", base=" << base << "==="
+              << std::endl;
+    auto t = bigint::itoa(n, base);
+    auto c = bigint::atoi(t.c_str(), n, base);
+    if (s > 64) {
+        auto o = bigint::itoa(n);
+        auto d = bigint::itoa(c);
+        std::cout << (n == c) << ": " << o << " <=> " << d << std::endl;
+    } else {
+        std::cout << (n == c) << ": " << n << " <=> " << c << std::endl;
+    }
+
+}
+
+template<typename T>
+void check128small(T n, int base) {
+    size_t s = sizeof(n) * 8;
+    std::cout << "====check " << (std::is_unsigned<T>::value ? "unsigned" : "") << s << ", base=" << base << "==="
+              << std::endl;
+    auto t = bigint::itoa(n, base);
+    auto c = bigint::atoi(t.c_str(), n, base);
+    auto o = bigint::itoa(n);
+    auto d = bigint::itoa(c);
+    std::cout << (n == c) << ": " << o << " <=> " << d << std::endl;
+}
+
 int main() {
     const char *v = "175217521587616124467546910193601601183";
 
@@ -12,6 +42,7 @@ int main() {
     std::cout << "size of int: " << sizeof(unsigned) << std::endl;
     std::cout << "size of long: " << sizeof(long) << std::endl;
     std::cout << "size of long long: " << sizeof(long long) << std::endl;
+    std::cout << "size of n: " << sizeof(n) << std::endl;
     std::cout << "number: " << v << std::endl;
     std::cout << "itoa: " << bigint::itoa(n) << std::endl;
     std::cout << "itoh: " << bigint::itoa(n, 16) << std::endl;
@@ -88,21 +119,30 @@ int main() {
             "185821098307828256561751903224487298575"
     };
     vec.reserve(67);
-    for (auto &arg : args) {
-        auto c = bigint::atoi(arg, n, 10);
+    for (auto &arg: args) {
+        auto c = bigint::atoi(arg, 10);
         vec.push_back(c);
     }
 
     std::vector<int> weight;
     SimHash<unsigned __int128> sim(16);
-    SimHash<unsigned __int128> sim2(std::string(v), 16);
+    SimHash<unsigned __int128> sim2(std::string(v), 16, 10);
     sim.buildByFeatures(vec, weight);
     std::cout << sim2.string() << "\n" << sim2.hex() << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << sim.string() << "\n" << sim.hex() << std::endl;
     std::cout << "parts:" << std::endl;
-    for (auto const &part:sim.getParts()) {
+    for (auto const &part: sim.getParts()) {
         std::cout << bigint::itoa(part) << std::endl;
     }
+    std::string s = "1d5920f4b44b27a802bd77c4f0536f5a";
+    n = bigint::atoi(s.c_str(), n, 16);
+    auto r = bigint::itoa(n, 16);
+    std::cout << s << "<->" << r << std::endl;
+    check128small(n, 16);
+    check64small(__uint64_t(17668899877662), 16);
+    check64small(__uint32_t(1766887662), 16);
+    check64small(__uint16_t(17889), 16);
+    check64small(int64_t(1766890887689), 16);
     return 0;
 }

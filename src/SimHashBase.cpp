@@ -4,7 +4,8 @@
 
 #include "SimHashBase.h"
 
-SimHashBase::SimHashBase(std::string const &s, unsigned int hash_bit) : hash_bit(hash_bit) {
+SimHashBase::SimHashBase(std::string const &s, unsigned int hash_bit, int base) : hash_bit(hash_bit) {
+
 }
 
 SimHashBase::SimHashBase(unsigned int hash_bit) : hash_bit(hash_bit) {

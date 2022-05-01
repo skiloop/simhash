@@ -6,6 +6,7 @@
 import io
 import os
 import platform
+import sys
 
 try:
     from setuptools import setup
@@ -46,6 +47,15 @@ def find_file(path, func):
     for fn in os.listdir(path):
         if os.path.isfile(path + "/" + fn) and func(fn):
             return fn
+
+
+def scan_argv(argv, feat):
+    for i in range(len(argv)):
+        arg = argv[i]
+        if arg == feat:
+            del argv[i]
+            return True
+    return False
 
 
 boost_lib_prefix = "libboost_python"
@@ -100,33 +110,56 @@ else:
     boost_python_root = update_build_flags()
     libraries.append("boost_python" if PY_VERSION[0] == "2" else "boost_python3")
 sources = [src_path("py_simhash.cpp"), src_path("SimHashBase.cpp")]
-extension_mod = Extension("pysimhash", sources, extra_compile_args=extra_compile_flags,
-                          extra_link_args=extra_link_flags,
-                          libraries=libraries)
 
-setup(
-    name=NAME,
-    version=VERSION,
-    description=DESCRIPTION,
-    author=AUTHOR,
-    long_description=long_description,
-    author_email=EMAIL,
-    url=URL,
-    license='MIT',
-    classifiers=[
-        'Operating System :: MacOS :: MacOS X',
-        'Operating System :: POSIX :: Linux',
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        "Topic :: Utilities",
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ],
-    long_description_content_type="text/markdown",
-    ext_modules=[extension_mod])
+
+def run_setup():
+    extension_mod = Extension(NAME, sources, extra_compile_args=extra_compile_flags,
+                              extra_link_args=extra_link_flags,
+                              libraries=libraries)
+    setup(
+        name=NAME,
+        version=VERSION,
+        description=DESCRIPTION,
+        author=AUTHOR,
+        long_description=long_description,
+        author_email=EMAIL,
+        url=URL,
+        license='MIT',
+        classifiers=[
+            'Operating System :: MacOS :: MacOS X',
+            'Operating System :: POSIX :: Linux',
+            'License :: OSI Approved :: MIT License',
+            'Programming Language :: Python',
+            'Programming Language :: Python :: 2',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.6',
+            'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
+            'Programming Language :: Python :: 3.9',
+            "Topic :: Utilities",
+            'Topic :: Software Development :: Libraries :: Python Modules',
+        ],
+        long_description_content_type="text/markdown",
+        ext_modules=[extension_mod])
+
+
+help_text = """  
+"""
+
+
+def strip_local_options(argv):
+    options = ["--help", "-h", "--debug"]
+    for option in options:
+        scan_argv(argv, option)
+
+
+if __name__ == "__main__":
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print(help_text)
+        strip_local_options(sys.argv)
+        run_setup()
+        sys.exit()
+    if scan_argv(sys.argv, "--debug"):
+        extra_compile_flags.append("-DDEBUG")
+    run_setup()

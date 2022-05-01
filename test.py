@@ -19,6 +19,7 @@ import pysimhash
 if PY3:
     basestring = (str, bytes)
     long = int
+    unicode = str.encode
 
 
 class Simhash(object):
@@ -40,21 +41,15 @@ class Simhash(object):
         self.reg = reg
         self.value = None
         self.part = []
-        if hashfunc is None:
-            def _hashfunc(x):
-                return int(hashlib.md5(x).hexdigest(), 16)
-
-            self.hashfunc = _hashfunc
-        else:
-            self.hashfunc = hashfunc
+        self.hashfunc = hashfunc if hashfunc is not None else lambda x: int(hashlib.md5(x).hexdigest(), 16)
 
         if isinstance(value, Simhash):
             self.value = value.value
         elif isinstance(value, basestring):
-            self.build_by_text(unicode(value))
+            self.build_by_text(value if PY3 else unicode(value))
         elif isinstance(value, collections.Iterable):
             self.build_by_features(value)
-        elif isinstance(value, long):
+        elif isinstance(value, (long, int)):
             self.value = value
         else:
             raise Exception('Bad parameter with type {}'.format(type(value)))
@@ -128,17 +123,32 @@ class Test(unittest.TestCase):
     def testValue(self):
         hs = "2479530857526804504083961063697536543"
         s1 = Simhash(int(hs))
-        s2 = pysimhash.SimHash(hs, 128, 16)
+        s2 = pysimhash.SimHash(hs, 128, 16, 10)
         self.assertEqual(str(s1.value), s2.value())
         self.assertEqual(s1.part, s2.parts())
 
-    def testDisance(self):
+    def testDistance(self):
         h2 = "2479530857526804504083961063697536543"
         h1 = "16438062231610353799719944743129574075"
         s1 = Simhash(int(h1))
         s2 = Simhash(int(h2))
         d1 = s1.distance(s2)
-        v1 = pysimhash.SimHash(h1, 128, 16)
-        v2 = pysimhash.SimHash(h2, 128, 16)
+        v1 = pysimhash.SimHash(h1, 128, 16, 10)
+        v2 = pysimhash.SimHash(h2, 128, 16, 10)
         d2 = v1.distance(v2)
         self.assertEqual(d1, d2)
+
+    def testBuild(self):
+        document = "google.com hybridtheory.com youtube.com reddit.com"
+        items = document.split(' ')
+        s1 = Simhash(items)
+        tokens = [hashlib.md5(s.encode('utf-8')).hexdigest() for s in items]
+        s2 = pysimhash.SimHash(128, 16)
+        s2.build(tokens, base=16)
+        s2v = s2.value()
+        self.assertEqual(s1.part, s2.parts())
+        self.assertEqual(s2v, str(s1.value))
+
+
+if __name__ == '__main__':
+    unittest.main()

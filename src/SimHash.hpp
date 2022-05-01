@@ -17,44 +17,50 @@ class SimHash : public SimHashBase {
     T _value;
 
 public:
-    SimHash(std::string const &s, unsigned int hash_bit = 16) : SimHashBase(s, hash_bit) {
-        this->applyValue(s);
+    explicit SimHash(std::string const &s, unsigned int hash_bit = 16, int base = 16)
+            : SimHashBase(s, hash_bit, base) {
+        this->applyValue(s, base);
         this->split();
     }
 
-
-    SimHash(unsigned int hash_bit = 16) : SimHashBase(hash_bit) {
+    explicit SimHash(unsigned int hash_bit = 16) : SimHashBase(hash_bit) {
     }
 
-    std::string string() const {
+    std::string string() const override {
         return bigint::itoa(this->_value);
     }
 
-    std::string hex() const {
+    std::string hex() const override {
         return bigint::itoa(this->_value, 16);
     }
 
-    unsigned dimension() const {
+    unsigned dimension() const override {
         return this->f;
     }
 
-    void build(list &features, list &weights, int base=16) {
-        std::vector<T> f;
+    void build(list &features, list &weights, int base) override {
+        std::vector<T> feat;
         std::vector<int> w;
         const T t = 0;
         boost::python::ssize_t n = boost::python::len(features);
         std::string token;
         for (boost::python::ssize_t i = 0; i < n; i++) {
             token = boost::python::extract<std::string>(features[i]);
-            f.push_back(bigint::atoi(token.c_str(), t, base));
+            feat.push_back(bigint::atoi(token.c_str(), t, base));
+#ifdef DEBUG
+            std::cout<<"features["<<i<<"]"<<token<<","<<bigint::itoa(feat[i], base)<<std::endl;
+#endif
         }
         n = boost::python::len(weights);
 
         for (boost::python::ssize_t i = 0; i < n; i++) {
             w.push_back(boost::python::extract<int>(weights[i]));
+#ifdef DEBUG
+            std::cout<<"weights["<<i<<"]"<<w[i]<<std::endl;
+#endif
         }
 
-        this->buildByFeatures(f, w);
+        this->buildByFeatures(feat, w);
     }
 
     void buildByFeatures(std::vector<T> &features, std::vector<int> &weights) {
@@ -69,17 +75,20 @@ public:
         }
         const T one = 1;
         auto wit = weights.begin();
-        for (auto const &feature:features) {
+        for (auto const &feature: features) {
             auto mask = one;
-            for (auto &v:values) {
+            for (auto &v: values) {
                 v += feature & mask ? *wit : -*wit;
                 mask <<= 1;
             }
+#ifdef DEBUG
+            std::cout<<bigint::itoa(feature,10)<<"\t"<<*wit<<std::endl;
+#endif
             wit++;
         }
         T ans = 0;
         auto mask = one;
-        for (auto const &v:values) {
+        for (auto const &v: values) {
             if (v >= 0) ans |= mask;
             mask <<= 1;
         }
@@ -87,10 +96,10 @@ public:
         this->split();
     };
 
-    unsigned distance(SimHashBase const &another) const {
+    unsigned distance(SimHashBase const &another) const override {
         if (this->dimension() != another.dimension())return -1;
-        SimHash<T> const &obj = dynamic_cast<SimHash<T> const &>(another);
-        auto x = this->_value ^obj._value;
+        auto const &obj = dynamic_cast<SimHash<T> const &>(another);
+        auto x = this->_value ^ obj._value;
         unsigned ans = 0;
         while (x) {
             ans += 1;
@@ -104,7 +113,7 @@ public:
     }
 
 private:
-    void split() {
+    void split() override {
         auto base = ((T) ((1 << this->hash_bit) - 1));
         auto n = this->f / this->hash_bit;
         for (size_t i = 0; i < n; i++) {
@@ -118,9 +127,11 @@ private:
         }
     }
 
-    void applyValue(std::string const &value) {
-        this->_value = bigint::atoi(value.c_str(), this->hash_bit);
-//        std::cout << "value: " << value << std::endl << "real value: " << bigint::itoa(this->_value) << std::endl;
+    void applyValue(std::string const &value, int base) override {
+        this->_value = bigint::atoi(value.c_str(), this->_value, base);
+#ifdef  DEBUG
+        std::cout << "value: " << value << std::endl << "real value: " << bigint::itoa(this->_value) << std::endl;
+#endif
     }
 };
 

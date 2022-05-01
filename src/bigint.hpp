@@ -35,25 +35,28 @@ namespace bigint {
 
     template<typename T>
     T atoi(const char *v, T t, int base = 10) {
+        if (v == nullptr) {
+            return 0;
+        }
         const char *start = v;
         int sign = 1;
         if (!std::is_unsigned<T>::value && *start == '-') {
             sign = -1;
             start++;
         }
-        const char *end = v + strlen(v);
         T i = 0;
-        T n = 1;
-        while (end != start) {
-            end--;
-            if (*end >= 'A' && *end <= 'F') {
-                i += n * (int) (*end - 'A') + 10;
-            } else if (*end >= 'a' && *end <= 'f') {
-                i += n * (int) (*end - 'a') + 10;
+        while (*start) {
+            if (*start >= 'a' && *start <= 'f') {
+                i += (int) (*start - 'a') + 10;
+            } else if (*start >= 'A' && *start <= 'F') {
+                i += (int) (*start - 'A') + 10;
             } else {
-                i += n * (int) (*end - '0');
+                i += (int) (*start - '0');
             }
-            n *= base;
+            start++;
+            if (*start) {
+                i *= base;
+            }
         }
         return i * sign;
     }

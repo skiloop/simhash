@@ -18,7 +18,7 @@ public:
     std::vector<unsigned> parts;
 
 public:
-    SimHashBase(std::string const &s, unsigned int hash_bit = 16);
+    SimHashBase(std::string const &s, unsigned int hash_bit = 16, int base=16);
 
     explicit SimHashBase(unsigned int hash_bit = 16);
 
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    virtual void applyValue(std::string const &v)=0;
+    virtual void applyValue(std::string const &v, int base)=0;
 
     virtual void split()=0;
 };
