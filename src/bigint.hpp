@@ -13,7 +13,7 @@
 namespace bigint {
     template<typename T>
     std::string itoa(T i, int base = 10) {
-        const char *values = "0123456789ABCDEF";
+        const char *values = "0123456789abcdef";
         std::string res;
         int sign = 1;
         if (!std::is_unsigned<T>::value && i < 0) {
