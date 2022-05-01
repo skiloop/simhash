@@ -38,7 +38,7 @@ public:
         return this->f;
     }
 
-    void build(list &features, list &weights) {
+    void build(list &features, list &weights, int base=16) {
         std::vector<T> f;
         std::vector<int> w;
         const T t = 0;
@@ -46,7 +46,7 @@ public:
         std::string token;
         for (boost::python::ssize_t i = 0; i < n; i++) {
             token = boost::python::extract<std::string>(features[i]);
-            f.push_back(bigint::atoi(token.c_str(), t, 10));
+            f.push_back(bigint::atoi(token.c_str(), t, base));
         }
         n = boost::python::len(weights);
 
@@ -58,11 +58,11 @@ public:
     }
 
     void buildByFeatures(std::vector<T> &features, std::vector<int> &weights) {
-        if (weights.begin() == weights.end()) {
-            for (size_t i = 0; i < features.size(); i++) {
-                weights.push_back(1);
-            }
+
+        for (size_t i = weights.size(); i < features.size(); i++) {
+            weights.push_back(1);
         }
+
         std::vector<long> values;
         for (size_t i = 0; i < this->f; i++) {
             values.push_back(0);
@@ -70,18 +70,18 @@ public:
         const T one = 1;
         auto wit = weights.begin();
         for (auto const &feature:features) {
-            auto c = one;
+            auto mask = one;
             for (auto &v:values) {
-                v += feature & c ? *wit : -*wit;
-                c <<= 1;
+                v += feature & mask ? *wit : -*wit;
+                mask <<= 1;
             }
             wit++;
         }
         T ans = 0;
-        auto c = one;
+        auto mask = one;
         for (auto const &v:values) {
-            if (v >= 0)ans |= c;
-            c <<= 1;
+            if (v >= 0) ans |= mask;
+            mask <<= 1;
         }
         this->_value = ans;
         this->split();
@@ -119,7 +119,7 @@ private:
     }
 
     void applyValue(std::string const &value) {
-        this->_value = bigint::atoi(value.c_str(), this->_value);
+        this->_value = bigint::atoi(value.c_str(), this->hash_bit);
 //        std::cout << "value: " << value << std::endl << "real value: " << bigint::itoa(this->_value) << std::endl;
     }
 };

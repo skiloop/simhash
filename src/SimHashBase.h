@@ -36,7 +36,7 @@ public:
 
     bool similar(SimHashBase const &another, int count, unsigned int distance) const;
 
-    virtual void build(list &features, list &weights)=0;
+    virtual void build(list &features, list &weights, int base)=0;
 
     virtual unsigned distance(SimHashBase const &another)const=0;
 

@@ -27,8 +27,8 @@ public:
         assert(this->s != nullptr);
     }
 
-    void build(list &features, list &weights) {
-        this->s->build(features, weights);
+    void build(list &features, list &weights, int base) {
+        this->s->build(features, weights, base);
     }
 
     list PartList() {
@@ -95,7 +95,12 @@ public:
 BOOST_PYTHON_MODULE (pysimhash) {
     class_<SimHashPy>("SimHash", init<std::string, unsigned, unsigned>())
             .def(init<unsigned, unsigned>())
-            .def("build", &SimHashPy::build)
+            .def("build", &SimHashPy::build,(arg("features"),arg("weights")=list(),arg("base")=16),
+            "build hash with features\n"
+            "features: feature with type of string, indicate a number\n"
+            "weights: weights of features with the same length, if len(weights)<len(features), 1 is taken as the missing weights\n"
+            "base: base of feature, default 16"
+            )
             .def("hex", &SimHashPy::hex)
             .def("similar", &SimHashPy::is_similar)
             .def("distance", &SimHashPy::get_distance)
