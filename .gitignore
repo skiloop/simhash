@@ -17,3 +17,4 @@ pysimhash.egg-info/
 /install_manifest.txt
 /simhash_cpp
 /simhash_cpp.cbp
+/cmake-build-debug/
