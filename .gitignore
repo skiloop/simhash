@@ -10,3 +10,10 @@ pysimhash.egg-info/
 **/__pycache__/**
 /_trial_temp.lock
 /_trial_temp/
+.vscode/c_cpp_properties.json
+/.cmake/
+/.vscode/
+/Testing/
+/install_manifest.txt
+/simhash_cpp
+/simhash_cpp.cbp
