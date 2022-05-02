@@ -32,17 +32,3 @@ INCLUDE_DIRECTORIES(src)
 LINK_LIBRARIES(${Boost_LIBRARIES} ${Python_LIBRARIES})
 
 add_executable(simhash_cpp src/SimHashBase.cpp src/main.cpp)
-
-set(PYTHONPATH "${CMAKE_CURRENT_BINARY_DIR}/${BUILD_LIB_DIR}")
-add_custom_target(pysimhash ALL DEPENDS pysimhash.egg-info)
-add_custom_command(
-        OUTPUT pysimhash.egg-info
-        COMMAND ${Python_EXECUTABLE} setup.py build
-        DEPENDS src/py_simhash.cpp src/SimHash.cpp src/SimHashBase.cpp
-)
-install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} ./setup.py install)")
-add_test(
-        NAME simhash_test
-        COMMAND ${Python_EXECUTABLE} ./test.py
-)
-set_tests_properties(simhash_test PROPERTIES ENVIRONMENT PYTHONPATH=${PYTHONPATH})
