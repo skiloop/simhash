@@ -1,22 +1,46 @@
 # simhash
-simhash cpp module for python, a cpp implement of [simhash](https://github.com/leonsim/simhash), support for large dimesion such as 128bit
+
+simhash cpp module for python, a cpp implement of [simhash](https://github.com/leonsim/simhash), support for large
+dimesion such as 128bit
+
 # install
+
 ```shell
 pip install pysimhash
 ```
+
 or install from github.com
+
 ```shell
 git clone https://github.com/skiloop/simhash
 cd simhash
 python setup.py install
 ```
+
 # requirements
-- boost python
+
+- boost-python
+
+
+# how to use
+
+example: 
+```python
+import pysimhash
+import hashlib
+document = "google.com hybridtheory.com youtube.com reddit.com"
+tokens = [hashlib.md5(s.encode('utf-8')).hexdigest() for s in document.split(" ")]
+s2 = pysimhash.SimHash(128, 16) # f=128, hash_bit=16
+s2.build(tokens, base=16)
+print(s2.hex())
+```
 
 # benchmark
-With 100,000 simhash value creating and comparing(using [benchmark.py](./benchmark.py)) on Intel(R) Core(TM) i5-4590 CPU @ 3.30GHz x86_64 ubuntu linux, results go as follow
 
-implement| time
-----|----
-pure python|11148.62 s
-pysimhash|2392.36 s
+With 10000 creating and 100,000 comparing(using [benchmark.py](./benchmark.py)) on the same linux, results
+go as follow
+
+| implement   | build time | comparison time |
+|-------------|------------|-----------------|
+| pure python | 1.73s      | 222.99s         |
+| pysimhash   | 0.14s      | 49.89s          |
