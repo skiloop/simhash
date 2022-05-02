@@ -1,4 +1,7 @@
 # simhash
+![https://pypi.python.org/pypi/pysimhash](https://img.shields.io/pypi/v/pysimhash.svg)
+![https://pypi.python.org/pypi/pysimhash](https://img.shields.io/pypi/pyversions/pysimhash.svg)
+![https://github.com/skiloop/simhash/actions?query=workflow%3ACodeQL](https://github.com/skiloop/simhash/workflows/CodeQL/badge.svg)
 
 simhash cpp module for python, a cpp implement of [simhash](https://github.com/leonsim/simhash), support for large
 dimesion such as 128bit
