@@ -7,8 +7,18 @@
 
 import collections
 import hashlib
+import platform
+import re
 import time
+from itertools import groupby
+
 from pysimhash import SimHash
+
+PY_VERSION = platform.python_version_tuple()
+if PY_VERSION[0] == "3":
+    basestring = (str, bytes)
+    long = int
+    unicode = str.encode
 
 
 class Simhash(object):
@@ -124,37 +134,55 @@ def load_hashes():
         return [line.strip() for line in f]
 
 
-def simhash_compare():
+hash_strings = load_hashes()
+
+
+def do_compare(func, similar):
     t = time.time()
-    hashes = [Simhash(long(s)) for s in load_hashes()]
+    hashes = [func(s) for s in hash_strings]
     cnt = 0
     for i, v1 in enumerate(hashes):
         for j, v2 in enumerate(hashes):
             if i == j:
                 continue
-            if v1.similar(v2):
+            if similar(v1, v2):
                 cnt += 1
     return time.time() - t, cnt
 
 
-def pysimhash_compare():
+def simhash_build_benchmark(doc, n, func):
     t = time.time()
-    hashes = [SimHash(s, 128, 16) for s in load_hashes()]
-    cnt = 0
-    for i, v1 in enumerate(hashes):
-        for j, v2 in enumerate(hashes):
-            if i == j:
-                continue
-            if v1.similar(v2, 2, 6):
-                cnt += 1
-    return time.time() - t, cnt
+    while n > 0:
+        func(doc)
+        n -= 1
+    return time.time() - t
+
+
+def pysimhash_build(doc):
+    features = [hashlib.md5(s.encode('utf-8')).hexdigest() for s in doc]
+    s = SimHash(128, 16)
+    s.build(features)
+
+
+def build_benchmark():
+    n = 10000
+    document = "google.com hybridtheory.com youtube.com reddit.com".split(" ")
+    simhash_time = simhash_build_benchmark(document, n, lambda s: Simhash(s))
+    pysimhash_time = simhash_build_benchmark(document, n, pysimhash_build)
+    print("simhash build time: [{}] {}s".format(n, simhash_time))
+    print("pysimhash build time: [{}] {}s".format(n, pysimhash_time))
+
+
+def compare_benchmark():
+    st, sn = do_compare(lambda s: Simhash(long(s)), lambda v1, v2: v1.similar(v2))
+    print("simhash comparison: {} s, {}".format(st, sn))
+    st, sn = do_compare(lambda s: SimHash(s, 128, 16, 10), lambda v1, v2: v1.similar(v2, 2, 6))
+    print("pysimhash comparison: {} s, {}".format(st, sn))
 
 
 def benchmark():
-    st, sn = simhash_compare()
-    print("simhash: {} ns, {}".format(st, sn))
-    st, sn = pysimhash_compare()
-    print("pysimhash: {} ns, {}".format(st, sn))
+    build_benchmark()
+    compare_benchmark()
 
 
 if __name__ == '__main__':
