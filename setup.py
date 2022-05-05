@@ -25,7 +25,7 @@ DESCRIPTION = 'a simhash module in cpp for python'
 URL = 'https://github.com/skiloop/simhash'
 EMAIL = 'skiloop@gmail.com'
 AUTHOR = 'Skiloop'
-VERSION = "1.0.7"
+VERSION = "1.1.1"
 SYSTEM = platform.system()
 if SYSTEM == "Windows":
     raise EnvironmentError("not support for windows")
