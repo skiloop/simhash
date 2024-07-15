@@ -3,11 +3,12 @@
 //
 
 #include <vector>
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
+#include <string>
 #include "SimHash.hpp"
 #include "bigint.hpp"
 
-using namespace boost::python;
+namespace py = pybind11;
 
 class SimHashPy {
 private:
@@ -25,17 +26,12 @@ public:
         this->s = this->getSimHashObject(f, hash_bit);
     }
 
-    void build(list &features, list &weights, int base) {
+    void build(std::vector<std::string> &features, std::vector<int> &weights, int base) {
         this->s->build(features, weights, base);
     }
 
-    list PartList() {
-        list lst;
-        auto parts = this->s->getParts();
-        for (auto v: parts) {
-            lst.append(v);
-        }
-        return lst;
+    std::vector<unsigned> PartList() {
+        return this->s->getParts();
     }
 
     std::string string() {
@@ -66,7 +62,13 @@ public:
                 return new SimHash<__uint8_t>(s, hash_bit <= 8 ? hash_bit : 8, base);
             case 128:
             default:
-                return new SimHash<unsigned __int128>(s, hash_bit, base);
+#ifdef _MSC_VER
+                py::module_ warnings = py::module_::import("warnings");
+                warnings.attr("warn")("128 bit simhash not supported for this build, switch to 64 bit", py::str("UserWarning"));
+                return new SimHash<__uint64_t>(s, hash_bit, base);
+#else
+                return new SimHash<__uint128_t>(s, hash_bit, base);
+#endif
         }
     }
 
@@ -82,20 +84,31 @@ public:
                 return new SimHash<__uint8_t>(hash_bit <= 8 ? hash_bit : 8);
             case 128:
             default:
-                return new SimHash<unsigned __int128>(hash_bit);
+#ifdef _MSC_VER
+                py::module_ warnings = py::module_::import("warnings");
+                warnings.attr("warn")("128 bit simhash not supported for this build, switch to 64 bit", py::str("UserWarning"));
+                return new SimHash<__uint64_t>(hash_bit);
+#else
+                return new SimHash<__uint128_t>(hash_bit);
+#endif
         }
     }
 };
 
-//BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS (f_build, build, 1, 3)
-BOOST_PYTHON_MODULE (pysimhash) {
 
-    class_<SimHashPy>("SimHash", init<std::string, unsigned, unsigned, int>())
-            .def(init<unsigned, unsigned>())
-            .def("build", &SimHashPy::build, (arg("features"), arg("weights") = list(), arg("base") = 16),
+PYBIND11_MODULE (pysimhash,m) {
+
+    py::class_<SimHashPy>(m,"SimHash")
+            .def(py::init<std::string, unsigned, unsigned, int>(),
+            (py::arg('s'), py::arg('f')=128, py::arg('hash_bit')=16, py::arg('base')=16))
+            .def(py::init<unsigned, unsigned>(), (py::arg('f')=128, py::arg('bash_bit')=16))
+            .def("build",
+                 &SimHashPy::build,
+                 (py::arg("features"), py::arg("weights") = std::vector<int>(), py::arg("base") = 16),
                  "build hash with features\n"
                  "features: feature with type of string, indicate a number\n"
-                 "weights: weights of features with the same length, if len(weights)<len(features), 1 is taken as the missing weights\n"
+                 "weights: weights of features with the same length, "
+                 "if len(weights)<len(features), 1 is taken as the missing weights\n"
                  "base: base of feature, default 16"
             )
             .def("hex", &SimHashPy::hex, "simhash as hex string")

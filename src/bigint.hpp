@@ -6,9 +6,23 @@
 #define SIMHASH_BIGINT_HPP
 
 #include <iostream>
-#include <cstring>
+#include <string>
 #include <vector>
 #include <algorithm>
+
+#ifdef _MSC_VER
+#include <cstdint>
+#define __uint8_t uint8_t
+#define __uint16_t uint16_t
+#define __uint32_t uint32_t
+#define __uint64_t uint64_t
+
+#else
+
+typedef unsigned __int128 __uint128_t;
+
+#endif
+
 
 namespace bigint {
     template<typename T>

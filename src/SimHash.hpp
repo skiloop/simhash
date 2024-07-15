@@ -38,29 +38,30 @@ public:
         return this->f;
     }
 
-    void build(list &features, list &weights, int base) override {
+    void build(std::vector<std::string> &features, std::vector<int> &weights, int base) override {
         std::vector<T> feat;
-        std::vector<int> w;
         const T t = 0;
-        boost::python::ssize_t n = boost::python::len(features);
-        std::string token;
-        for (boost::python::ssize_t i = 0; i < n; i++) {
-            token = boost::python::extract<std::string>(features[i]);
+
+#ifdef DEBUG
+        int i = 0;
+#endif
+        for (const auto& token:features) {
+
             feat.push_back(bigint::atoi(token.c_str(), t, base));
 #ifdef DEBUG
             std::cout<<"features["<<i<<"]"<<token<<","<<bigint::itoa(feat[i], base)<<std::endl;
+            i++;
 #endif
         }
-        n = boost::python::len(weights);
 
-        for (boost::python::ssize_t i = 0; i < n; i++) {
-            w.push_back(boost::python::extract<int>(weights[i]));
 #ifdef DEBUG
-            std::cout<<"weights["<<i<<"]"<<w[i]<<std::endl;
-#endif
+        i = 0;
+        for (const auto& vi:weights) {
+            std::cout<<"weights["<<i++<<"]"<<vi<<std::endl;
         }
+#endif
 
-        this->buildByFeatures(feat, w);
+        this->buildByFeatures(feat, weights);
     }
 
     void buildByFeatures(std::vector<T> &features, std::vector<int> &weights) {

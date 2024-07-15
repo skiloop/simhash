@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "wheel","pybind11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pysimhash"
+version = "1.1.1"
+description = "a simhash module in cpp for python"
+license = { text = "MIT License" }
+readme = { file = "README.md", content-type = "text/markdown" }
+keywords = ["utils"]
+
+authors = [
+    { name = "skiloop", email = "skiloop@gmail.com" }
+]
+
+classifiers = [
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: POSIX :: Linux',
+    'License :: OSI Approved :: MIT License',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 2',
+    'Programming Language :: Python :: 2.7',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    "Topic :: Utilities",
+    'Topic :: Software Development :: Libraries :: Python Modules',
+]
+requires-python = ">=2.7"
+
+[project.optional-dependencies]
+dev = [
+    "pybind11"
+]
+[project.urls]
+homepage = "https://github.com/skiloop/simhash"
+repository = "https://github.com/skiloop/simhash"
