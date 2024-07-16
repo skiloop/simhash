@@ -115,7 +115,7 @@ public:
 
 private:
     void split() override {
-        auto base = ((T) ((1 << this->hash_bit) - 1));
+        auto base = (static_cast<uint64_t>(1) << this->hash_bit) - 1;
         auto n = this->f / this->hash_bit;
         for (size_t i = 0; i < n; i++) {
             if (this->_value == 0) {

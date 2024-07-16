@@ -19,6 +19,10 @@ if PY_VERSION[0] == "3":
     basestring = (str, bytes)
     long = int
     unicode = str.encode
+if PY_VERSION[0] == "3" and int(PY_VERSION[1]) >= 3:
+    from collections.abc import Iterable
+else:
+    from collections import Iterable
 
 
 class Simhash(object):
@@ -52,7 +56,7 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, Iterable):
             self.build_by_features(value)
         elif isinstance(value, long):
             self.value = value
@@ -99,7 +103,7 @@ class Simhash(object):
                 h = self.hashfunc(f.encode('utf-8'))
                 w = 1
             else:
-                assert isinstance(f, collections.Iterable)
+                assert isinstance(f, Iterable)
                 h = self.hashfunc(f[0].encode('utf-8'))
                 w = f[1]
             for i in range(self.f):
