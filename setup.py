@@ -62,6 +62,6 @@ if __name__ == "__main__":
         strip_local_options(sys.argv)
         run_setup()
         sys.exit()
-    # if scan_argv(sys.argv, "--debug"):
-    extra_compile_flags.append("/DDEBUG" if platform.system() == 'Windows' else '-DDEBUG')
+    if scan_argv(sys.argv, "--debug"):
+        extra_compile_flags.append("/DDEBUG" if platform.system() == 'Windows' else '-DDEBUG')
     run_setup()

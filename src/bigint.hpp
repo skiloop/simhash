@@ -17,8 +17,6 @@
 #define __uint32_t uint32_t
 #define __uint64_t uint64_t
 
-#else
-
 // typedef unsigned __int128 __uint128_t;
 
 #endif

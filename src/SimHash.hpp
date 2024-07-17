@@ -11,6 +11,11 @@
 #include "bigint.hpp"
 #include "SimHashBase.h"
 
+#if defined(__SSE4_2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(_M_X64)
+#define HIGH64(x) (static_cast<__uint64_t>(x>>64))
+#define LOW64(x) (static_cast<__uint64_t>(x&((1<<64)-1))
+#endif
+
 template<typename T>
 class SimHash : public SimHashBase {
     static const unsigned int f = sizeof(T) * 8;
@@ -24,6 +29,7 @@ public:
         }
         return ;
     }
+
     explicit SimHash(std::string const &s, unsigned int hash_bit = 16, int base = 16)
             : SimHashBase(s, hash_bit, base) {
         this->applyValue(s, base);
@@ -111,12 +117,37 @@ public:
         if (this->dimension() != another.dimension())return -1;
         auto const &obj = dynamic_cast<SimHash<T> const &>(another);
         auto x = this->_value ^ obj._value;
+#if defined(__SSE4_2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(_M_X64)
+#ifdef DEBUG
+        std::cout << "use popcnt" << std::endl;
+#endif
+        switch(sizeof(T)){
+            case 16:
+                return __popcnt64(static_cast<__uint64_t>(x)) + __popcnt64(static_cast<__uint64_t>(x>>64));
+            case 8:
+                return __popcnt64(x);
+            default:
+                return __popcnt(x);
+        }
+
+#elif defined(__POPCNT__)
+        switch(sizeof(T)){
+            case 16:
+                return __builtin_popcountll(x);
+            case 8:
+                return __builtin_popcountl(x);
+            default:
+                return __builtin_popcount(x);
+        }
+#else
+
         unsigned ans = 0;
         while (x) {
             ans += 1;
             x &= x - 1;
         }
         return ans;
+#endif
     };
 
     const std::vector<unsigned> &getParts() {

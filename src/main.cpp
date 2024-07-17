@@ -3,6 +3,10 @@
 #include "bigint.hpp"
 #include "SimHash.hpp"
 
+#ifdef _MSC_VER
+typedef __uint64_t __uint128_t;
+#endif
+
 
 template<typename T>
 void check64small(T n, int base) {
@@ -36,19 +40,20 @@ void check128small(T n, int base) {
 int main() {
     const char *v = "175217521587616124467546910193601601183";
 
-    unsigned __int128 n = 0;
+    __uint128_t n = 0;
     n = bigint::atoi(v, n);
 //    n = ~n;
-    std::cout << "size of int: " << sizeof(unsigned) << std::endl;
-    std::cout << "size of long: " << sizeof(long) << std::endl;
-    std::cout << "size of long long: " << sizeof(long long) << std::endl;
-    std::cout << "size of n: " << sizeof(n) << std::endl;
+    
+    std::cout << "size of __uint8_t  : " << sizeof(__uint8_t) << std::endl;
+    std::cout << "size of __uint16_t : " << sizeof(__uint16_t) << std::endl;
+    std::cout << "size of __uint64_t : " << sizeof(__uint64_t) << std::endl;
+    std::cout << "size of __uint128_t: " << sizeof(__uint128_t) << std::endl;
     std::cout << "number: " << v << std::endl;
     std::cout << "itoa: " << bigint::itoa(n) << std::endl;
     std::cout << "itoh: " << bigint::itoa(n, 16) << std::endl;
     std::cout << "0x9F56E itoh: " << bigint::itoa(0x9F56E, 16) << std::endl;
-    bigint::atoi(v, (unsigned __int128) 0);
-    std::vector<unsigned __int128> vec;
+    bigint::atoi(v, static_cast<__uint128_t>(0));
+    std::vector<__uint128_t> vec;
     const char *args[] = {
             "42051104994139258118942948757380092102",
             "115500668239670441780171732429666432077",
@@ -125,12 +130,13 @@ int main() {
     }
 
     std::vector<int> weight;
-    SimHash<unsigned __int128> sim(16);
-    SimHash<unsigned __int128> sim2(std::string(v), 16, 10);
+    SimHash<__uint128_t> sim(16);
+    SimHash<__uint128_t> sim2(std::string(v), 16, 10);
     sim.buildByFeatures(vec, weight);
     std::cout << sim2.string() << "\n" << sim2.hex() << std::endl;
     std::cout << "===================================" << std::endl;
     std::cout << sim.string() << "\n" << sim.hex() << std::endl;
+    std::cout << "distance: " << sim.distance(sim2) << std::endl;
     std::cout << "parts:" << std::endl;
     for (auto const &part: sim.getParts()) {
         std::cout << bigint::itoa(part) << std::endl;

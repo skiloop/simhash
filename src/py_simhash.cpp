@@ -133,7 +133,7 @@ PYBIND11_MODULE (pysimhash,m) {
             py::arg("another"), py::arg("count"), py::arg("distance"),
              "check if this hash is similar with another")
             .def("distance", &SimHashPy::get_distance,py::arg("another"),
-             "get the distance between this hash and another")
+             "get the distance between this hash and another, return -1 if not in the same dimension")
             .def("parts", &SimHashPy::PartList, "return parts of the hash value")
             .def("value", &SimHashPy::string, "simhash as decimal string");
 }

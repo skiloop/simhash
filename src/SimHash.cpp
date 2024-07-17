@@ -4,6 +4,7 @@
 
 #include "SimHash.hpp"
 
+/**
 bool SimHashBase::similar(SimHashBase const &another, int count, unsigned int distance) const {
     if (this->dimension() != another.dimension())return false;
     if (this == &another) {
@@ -24,3 +25,4 @@ bool SimHashBase::similar(SimHashBase const &another, int count, unsigned int di
     }
     return false;
 }
+*/
