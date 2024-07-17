@@ -9,13 +9,13 @@ bool SimHashBase::similar(SimHashBase const &another, int count, unsigned int di
     if (this == &another) {
         return true;
     }
-    auto cnt = 0;
+
     auto it = this->parts.begin();
     auto ait = another.parts.begin();
     while (it != this->parts.end() && ait != another.parts.end()) {
         if (*it == *ait) {
-            cnt++;
-            if (cnt >= count) {
+            count--;
+            if (0 == count) {
                 return this->distance(another) <= distance;
             }
         }

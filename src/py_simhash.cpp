@@ -55,6 +55,11 @@ public:
         return this->s->hex();
     }
 
+    unsigned dimension() {
+        return this->s->dimension();
+    }
+
+
     bool is_similar(SimHashPy const &another, int count, int distance) {
         return this->s->similar(*(another.s), count, distance);
     }
@@ -123,6 +128,7 @@ PYBIND11_MODULE (pysimhash,m) {
                  "base: base of feature, default 16"
             )
             .def("hex", &SimHashPy::hex, "simhash as hex string")
+            .def("dimension", &SimHashPy::dimension, "simhash dimension")
             .def("similar", &SimHashPy::is_similar,
             py::arg("another"), py::arg("count"), py::arg("distance"),
              "check if this hash is similar with another")

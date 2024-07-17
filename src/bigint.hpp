@@ -19,7 +19,7 @@
 
 #else
 
-typedef unsigned __int128 __uint128_t;
+// typedef unsigned __int128 __uint128_t;
 
 #endif
 

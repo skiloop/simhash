@@ -61,7 +61,7 @@ class Simhash(object):
         elif isinstance(value, long):
             self.value = value
         else:
-            raise Exception('Bad parameter with type {}'.format(type(value)))
+            raise TypeError(f"Bad parameter with type {type(value)}")
         self.split_part()
 
     def _slide(self, content, width=4):
@@ -134,7 +134,7 @@ class Simhash(object):
 
 
 def load_hashes():
-    with open('simhash.txt') as f:
+    with open('simhash.txt', encoding='utf-8') as f:
         return [line.strip() for line in f]
 
 
@@ -171,17 +171,17 @@ def pysimhash_build(doc):
 def build_benchmark():
     n = 10000
     document = "google.com hybridtheory.com youtube.com reddit.com".split(" ")
-    simhash_time = simhash_build_benchmark(document, n, lambda s: Simhash(s))
+    simhash_time = simhash_build_benchmark(document, n, Simhash)
     pysimhash_time = simhash_build_benchmark(document, n, pysimhash_build)
-    print("simhash build time: [{}] {}s".format(n, simhash_time))
-    print("pysimhash build time: [{}] {}s".format(n, pysimhash_time))
+    print(f"simhash build time: [{n}] {simhash_time}s")
+    print(f"pysimhash build time: [{n}] {pysimhash_time}s")
 
 
 def compare_benchmark():
     st, sn = do_compare(lambda s: Simhash(long(s)), lambda v1, v2: v1.similar(v2))
-    print("simhash comparison: {} s, {}".format(st, sn))
+    print(f"simhash comparison: {st} s, {sn}")
     st, sn = do_compare(lambda s: SimHash(s, 128, 16, 10), lambda v1, v2: v1.similar(v2, 2, 6))
-    print("pysimhash comparison: {} s, {}".format(st, sn))
+    print(f"pysimhash comparison: {st} s, {sn}")
 
 
 def benchmark():

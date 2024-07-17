@@ -17,6 +17,13 @@ class SimHash : public SimHashBase {
     T _value;
 
 public:
+    bool similar2(SimHashBase const &another, int count, unsigned int distance) const{
+         if (this->dimension() != another.dimension())return false;
+        if (this == &another) {
+            return true;
+        }
+        return ;
+    }
     explicit SimHash(std::string const &s, unsigned int hash_bit = 16, int base = 16)
             : SimHashBase(s, hash_bit, base) {
         this->applyValue(s, base);
@@ -71,16 +78,19 @@ public:
         }
 
         std::vector<long> values;
+        std::vector<T> masks;
+        const T one = 1;
         for (size_t i = 0; i < this->f; i++) {
             values.push_back(0);
+            masks.push_back(one<<i);
         }
-        const T one = 1;
         auto wit = weights.begin();
+
         for (auto const &feature: features) {
-            auto mask = one;
+            auto mask = masks.begin();
             for (auto &v: values) {
-                v += feature & mask ? *wit : -*wit;
-                mask <<= 1;
+                v += feature & *mask ? *wit : -*wit;
+                mask++;
             }
 #ifdef DEBUG
             std::cout<<bigint::itoa(feature,10)<<"\t"<<*wit<<std::endl;
@@ -88,10 +98,10 @@ public:
             wit++;
         }
         T ans = 0;
-        auto mask = one;
+        auto mask = masks.begin();
         for (auto const &v: values) {
-            if (v >= 0) ans |= mask;
-            mask <<= 1;
+            if (v >= 0) ans |= *mask;
+            mask++;
         }
         this->_value = ans;
         this->split();
@@ -115,7 +125,7 @@ public:
 
 private:
     void split() override {
-        auto base = (static_cast<uint64_t>(1) << this->hash_bit) - 1;
+        auto base = (static_cast<T>(1) << this->hash_bit) - 1;
         auto n = this->f / this->hash_bit;
         for (size_t i = 0; i < n; i++) {
             if (this->_value == 0) {

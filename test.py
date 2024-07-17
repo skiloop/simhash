@@ -120,6 +120,13 @@ class Test(unittest.TestCase):
     def setUp(self):
         print(pysimhash.__file__)
 
+    def test64Value(self):
+        hs = "2479530857526804504"
+        s1 = Simhash(int(hs), f=64)
+        s2 = pysimhash.SimHash(hs, 64, 16, 10)
+        self.assertEqual(str(s1.value), s2.value())
+        self.assertEqual(s1.part, s2.parts())
+
     def testValue(self):
         hs = "2479530857526804504083961063697536543"
         s1 = Simhash(int(hs))
@@ -144,6 +151,17 @@ class Test(unittest.TestCase):
         s1 = Simhash(items)
         tokens = [hashlib.md5(s.encode('utf-8')).hexdigest() for s in items]
         s2 = pysimhash.SimHash(128, 16)
+        s2.build(tokens, base=16)
+        s2v = s2.value()
+        self.assertEqual(s1.part, s2.parts())
+        self.assertEqual(s2v, str(s1.value))
+
+    def test64Build(self):
+        document = "google.com hybridtheory.com youtube.com reddit.com"
+        items = document.split(' ')
+        s1 = Simhash(items, f=64)
+        tokens = [hashlib.md5(s.encode('utf-8')).hexdigest() for s in items]
+        s2 = pysimhash.SimHash(64, 16)
         s2.build(tokens, base=16)
         s2v = s2.value()
         self.assertEqual(s1.part, s2.parts())
