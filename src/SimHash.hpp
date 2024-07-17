@@ -27,7 +27,7 @@ public:
         if (this == &another) {
             return true;
         }
-        return ;
+        return false;
     }
 
     explicit SimHash(std::string const &s, unsigned int hash_bit = 16, int base = 16)
