@@ -31,7 +31,7 @@ def scan_argv(argv, feat):
 
 # the c++ extension module
 libraries = []
-extra_compile_flags = ['/std:c++11' if platform.system() == 'Windows' else '-std=c++11']
+extra_compile_flags = []  if platform.system() == 'Windows' else ['-std=c++11']
 extra_link_flags = []
 
 sources = ["src/py_simhash.cpp", "src/SimHashBase.cpp"]
@@ -62,6 +62,6 @@ if __name__ == "__main__":
         strip_local_options(sys.argv)
         run_setup()
         sys.exit()
-    if scan_argv(sys.argv, "--debug"):
-        extra_compile_flags.append("-DDEBUG")
+    # if scan_argv(sys.argv, "--debug"):
+    extra_compile_flags.append("/DDEBUG" if platform.system() == 'Windows' else '-DDEBUG')
     run_setup()
