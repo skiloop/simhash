@@ -134,7 +134,7 @@ private:
             }
             auto c = i * this->hash_bit;
             auto base_ = base << c;
-            this->parts.push_back((this->_value & base_) >> c);
+            this->parts.push_back(static_cast<unsigned>((this->_value & base_) >> c));
         }
     }
 
