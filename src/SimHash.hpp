@@ -14,6 +14,8 @@
 #if defined(__SSE4_2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(_M_X64)
 #define HIGH64(x) (static_cast<__uint64_t>(x>>64))
 #define LOW64(x) (static_cast<__uint64_t>(x&((1<<64)-1))
+#else
+#include <immintrin.h>		
 #endif
 
 template<typename T>
@@ -119,7 +121,7 @@ public:
         auto x = this->_value ^ obj._value;
 #if defined(__SSE4_2__) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(_M_X64)
 #ifdef DEBUG
-        std::cout << "use popcnt" << std::endl;
+        std::cout << "distance by popcnt" << std::endl;
 #endif
         switch(sizeof(T)){
             case 16:
@@ -131,6 +133,9 @@ public:
         }
 
 #elif defined(__POPCNT__)
+#ifdef DEBUG
+        std::cout << "distance by builtin popcount" << std::endl;
+#endif
         switch(sizeof(T)){
             case 16:
                 return __builtin_popcountll(x);
@@ -140,13 +145,38 @@ public:
                 return __builtin_popcount(x);
         }
 #else
+	/**
+#ifdef DEBUG
+        std::cout << "use _mm_popcnt_u32" << std::endl;
+#endif
+        switch(sizeof(T)){
+   	    case 16:
+#if defined(__AVX512BW__) && defined(__AVX512DQ__)	
+                return _mm_popcnt_u128(x);
+#else
+		break;
+#endif
+            case 8:
+                return _mm_popcnt_u64(x);
+            default:
+                return _mm_popcnt_u32((unsigned int)x);
+        }
+#else
 
+#ifndef __AVX512BW__
+#ifndef __AVX512DQ__
+	*/
+#ifdef DEBUG
+        std::cout << "distance by counting" << std::endl;
+#endif
         unsigned ans = 0;
         while (x) {
             ans += 1;
             x &= x - 1;
         }
         return ans;
+//#endif
+//#endif
 #endif
     };
 
